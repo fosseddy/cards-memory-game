@@ -6,7 +6,7 @@ const canvas: HTMLCanvasElement = document.createElement("canvas");
 const ctx: CanvasRenderingContext2D = (() => {
   const ctx = canvas.getContext("2d");
 
-  if (!ctx) {
+    if (!ctx) {
     throw new Error("Tried to access 2d canvas rendering context, but unlucky.");
   }
 
@@ -35,11 +35,10 @@ function vec2Create(x: number, y: number): Vec2 {
 type Card = {
   pos: Vec2;
   center: Vec2;
-  scaleX: number;
+  scale: number;
   w: number;
   h: number;
-  isFlipped: boolean;
-  flipSpeed: number;
+  dscale: number;
 }
 
 function cardCreate(x: number, y: number): Card {
@@ -51,27 +50,26 @@ function cardCreate(x: number, y: number): Card {
   return {
     pos,
     center,
-    scaleX: 1,
-    w, h,
-    isFlipped: false,
-    flipSpeed: 0
+    scale: 1,
+    dscale: 0,
+    w, h
   };
 }
 
 function cardDraw(c: Card, ctx: CanvasRenderingContext2D) {
   ctx.translate(c.center.x, c.center.y);
-  ctx.scale(c.scaleX, 1);
+  ctx.scale(c.scale, 1);
   ctx.translate(-c.center.x, -c.center.y);
-  ctx.fillStyle = c.scaleX > 0 ? "black" : "red";
+  ctx.fillStyle = c.scale > 0 ? "black" : "red";
   ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 function cardUpdate(c: Card, dt: number) {
-  c.scaleX = Number((c.scaleX + (c.flipSpeed * dt)).toFixed(1));
+  c.scale = toFixed(c.scale + c.dscale * dt, 1);
 
-  if (c.scaleX <= -1 || c.scaleX >= 1) {
-    c.flipSpeed = 0;
+  if (c.scale <= -1 || c.scale >= 1) {
+    c.dscale = 0;
   }
 }
 
@@ -85,6 +83,8 @@ let prevTimestamp: number = 0;
 
 function gameLoop(timestamp: number) {
   const dt: number = (timestamp - prevTimestamp) * 0.001;
+  // Firefox bug? During click event firefox returns the same value as before,
+  // so dt will be 0, which leads to bugs. Chromium and Safari work fine.
   if (dt <= 0) {
     requestAnimationFrame(gameLoop);
     return;
@@ -104,19 +104,19 @@ function gameLoop(timestamp: number) {
   }
 
   if (window.showGrid) {
+    ctx.beginPath();
+
     for (let x = TILE; x < C_WIDTH; x += TILE) {
-      ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, C_HEIGHT);
-      ctx.stroke();
     }
 
     for (let y = TILE; y < C_HEIGHT; y += TILE) {
-      ctx.beginPath();
       ctx.moveTo(0, y);
       ctx.lineTo(C_WIDTH, y);
-      ctx.stroke();
     }
+
+    ctx.stroke();
   }
 
   requestAnimationFrame(gameLoop);
@@ -124,6 +124,9 @@ function gameLoop(timestamp: number) {
 
 requestAnimationFrame(gameLoop);
 
+function toFixed(float: number, precision: number): number {
+  return Number(float.toFixed(precision));
+}
 
 function getRelativeMouseCoords(event: MouseEvent): Vec2 {
   const { clientX, clientY, target } = event;
@@ -142,13 +145,11 @@ canvas.addEventListener("click", (event: MouseEvent) => {
 
   for (const c of cards) {
     if (clickedInside(c, mouse)) {
-      if (c.isFlipped) {
-        c.flipSpeed = window.flipSpeed;
+      if (c.scale <= -1) {
+        c.dscale = window.flipSpeed;
       } else {
-        c.flipSpeed = -window.flipSpeed;
+        c.dscale = -window.flipSpeed;
       }
-
-      c.isFlipped = !c.isFlipped;
 
       console.log(c);
     }
