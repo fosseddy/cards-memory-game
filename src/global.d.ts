@@ -4,5 +4,6 @@ declare global {
   interface Window {
     showGrid: boolean;
     flipSpeed: number;
+    unflipDelay: number;
   }
 }
