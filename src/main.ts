@@ -2,28 +2,37 @@ import { TILE, C_WIDTH, C_HEIGHT } from "./constants";
 import { createAndAppendTo } from "./canvas";
 import { getRelativeMouseCoords, clickedInside } from "./utils";
 import * as card from "./card";
-// import * as vec2 from "./vec2";
 
 type Game = {
   cards: card.Card[];
-  count: number;
+  flipped: card.Card[];
+  correct: card.Card[];
   unflipDelay: number;
+}
+
+function gameGetAvailableCards(g: Game): card.Card[] {
+  return g.cards.filter(c => !g.correct.includes(c));
 }
 
 // DEV VARIABLES
 window.showGrid = false;
 window.flipSpeed = 5;
-window.unflipDelay = 200 * 0.001;
+window.unflipDelay = 100 * 0.001;
 
 const { canvas, ctx } = createAndAppendTo(document.body);
 
 const game: Game = {
   cards: [
-    card.create(2 * TILE, 2 * TILE),
-    card.create(5 * TILE, 2 * TILE),
+    card.create(2 * TILE, 2 * TILE, "red"),
+    card.create(5 * TILE, 2 * TILE, "blue"),
+    card.create(8 * TILE, 2 * TILE, "green"),
+    card.create(11 * TILE, 2 * TILE, "green"),
+    card.create(14 * TILE, 2 * TILE, "blue"),
+    card.create(17 * TILE, 2 * TILE, "red"),
   ],
-  count: 0,
-  unflipDelay: window.unflipDelay
+  flipped: [],
+  correct: [],
+  unflipDelay: window.unflipDelay,
 }
 
 let prevTimestamp = 0;
@@ -39,24 +48,38 @@ function gameLoop(timestamp: number) {
   prevTimestamp = timestamp;
 
   // UPDATE
-  game.count = 0;
+  const board = gameGetAvailableCards(game);
 
-  for (const c of game.cards) {
+  for (const c of board) {
     card.update(c, dt);
+  }
 
-    if (c.scale <= -1) {
-      game.count += 1;
+  for (const c of board) {
+    if (!game.flipped.includes(c) && c.scale <= -1) {
+      game.flipped.push(c);
     }
   }
 
-  if (game.count >= 2) {
-    if (game.unflipDelay <= 0) {
-      game.unflipDelay = window.unflipDelay;
-      for (const c of game.cards) {
-        c.dscale = window.flipSpeed;
-      }
+  if (game.flipped.length >= 2) {
+    const [c1, c2] = game.flipped;
+    if (!c1 || !c2) throw new Error("WTF");
+
+    if (c1.color.front === c2.color.front) {
+      game.correct.push(c1, c2);
+      game.flipped = [];
     } else {
-      game.unflipDelay -= dt;
+      if (game.unflipDelay <= 0) {
+        game.unflipDelay = window.unflipDelay;
+        game.flipped = [];
+
+        for (const c of board) {
+          if (c.scale <= -1) {
+            c.dscale = window.flipSpeed;
+          }
+        }
+      } else {
+        game.unflipDelay -= dt;
+      }
     }
   }
 
@@ -67,9 +90,16 @@ function gameLoop(timestamp: number) {
     card.draw(c, ctx);
   }
 
+
   ctx.fillStyle = "black";
-  ctx.font = "50px serif";
-  ctx.fillText(String(game.count), 250, 300);
+  ctx.textAlign = "center";
+  ctx.font = "40px serif";
+  if (game.correct.length === game.cards.length) {
+    ctx.fillText("You are the Winner!", C_WIDTH / 2, C_HEIGHT / 2 + 30);
+  } else {
+    ctx.fillText("flipped: " + String(game.flipped.length), C_WIDTH / 2, C_HEIGHT / 2 + 30);
+    ctx.fillText("correct: " + String(game.correct.length), C_WIDTH / 2, C_HEIGHT / 2 + 80);
+  }
 
   if (window.showGrid) {
     ctx.beginPath();
@@ -95,8 +125,15 @@ requestAnimationFrame(gameLoop);
 canvas.addEventListener("click", (event: MouseEvent) => {
   const mouse = getRelativeMouseCoords(event);
 
+  let flippedOrFlippingCount = 0;
+  for (const c of gameGetAvailableCards(game)) {
+    if (c.scale < 1) flippedOrFlippingCount += 1;
+  }
+
   for (const c of game.cards) {
-    if (!clickedInside(c, mouse) || c.scale < 1) continue;
+    if (!clickedInside(c, mouse) ||
+        c.scale < 1 ||
+        flippedOrFlippingCount >= 2) continue;
     c.dscale = -window.flipSpeed;
   }
 });
