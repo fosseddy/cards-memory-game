@@ -10,7 +10,7 @@ export function createAndAppendTo(el: HTMLElement): CanvasData {
   const ctx: CanvasRenderingContext2D = (() => {
     const ctx = canvas.getContext("2d");
 
-      if (!ctx) {
+    if (!ctx) {
       throw new Error("Tried to access 2d canvas rendering context," +
                       " but unlucky.");
     }

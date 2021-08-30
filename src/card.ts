@@ -22,8 +22,8 @@ export type Card = {
 
 export function create(x: number, y: number, frontColor: color.Color): Card {
   const pos = vec2.create(x, y);
-  const w = 2 * TILE;
-  const h = 3 * TILE;
+  const w = 3 * TILE;
+  const h = 5 * TILE;
   const center = vec2.create(x + w / 2, y + h / 2);
 
   return {

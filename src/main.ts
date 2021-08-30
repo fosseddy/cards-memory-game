@@ -20,15 +20,66 @@ type Game = {
 
 const { canvas, ctx } = createAndAppendTo(document.body);
 
+const colors: { [key: string]: [number, number, number] } = {
+  "red": [255, 0, 0],
+  "lime": [0, 255, 0],
+  "blue": [0, 0, 255],
+  "yellow": [255, 255, 0],
+  "cyan": [0, 255, 255],
+  "magenta": [255, 0, 255],
+  "maroon": [128, 0, 0],
+  "green": [0, 128, 0],
+  "purple": [128, 0, 128],
+  "teal": [0, 128, 128],
+  "navy": [0, 0, 128],
+  "wheat": [245, 222, 179],
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  let newArr = [...arr];
+
+  let ci = arr.length;
+  let ri = 0;
+
+  while (ci !== 0) {
+    ri = Math.floor(Math.random() * ci);
+    ci -= 1;
+
+    [newArr[ci], newArr[ri]] = [newArr[ri]!, newArr[ci]!];
+  }
+
+  return newArr;
+}
+
+function fillCards(): card.Card[] {
+  let cards: card.Card[] = [];
+  let k = Object.keys(colors);
+  let clrs = shuffle([...k, ...k]);
+
+  let origx = 2;
+  let x = origx;
+  let y = 2;
+
+  for (const [_, c] of clrs.entries()) {
+    let xstep = 5;
+    let ystep = 7;
+    let col = color.create(...colors[c]!);
+
+    cards.push(card.create(x * TILE, y * TILE, col));
+
+    if (x >= 26) {
+      x = origx;
+      y += ystep;
+    } else {
+      x += xstep;
+    }
+  }
+
+  return cards;
+}
+
 const game: Game = {
-  cards: [
-    card.create(2 * TILE, 2 * TILE, color.create(255, 0, 0)),
-    card.create(5 * TILE, 2 * TILE, color.create(0, 0, 255)),
-    card.create(8 * TILE, 2 * TILE, color.create(0, 255, 0)),
-    card.create(11 * TILE, 2 * TILE, color.create(0, 255, 0)),
-    card.create(14 * TILE, 2 * TILE, color.create(0, 0, 255)),
-    card.create(17 * TILE, 2 * TILE, color.create(255, 0, 0)),
-  ],
+  cards: fillCards(),
   flipped: [],
   unflipDelay: window.unflipDelay
 }
