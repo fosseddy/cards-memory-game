@@ -1,10 +1,11 @@
 import { TILE } from "./constants";
 import { toFixed } from "./utils";
 import * as vec2 from "./vec2";
+import * as color from "./color";
 
 type CardColor = {
-  front: string;
-  back: string;
+  front: color.Color;
+  back: color.Color;
 }
 
 export type Card = {
@@ -19,7 +20,7 @@ export type Card = {
   dalpha: number;
 }
 
-export function create(x: number, y: number, frontColor: string): Card {
+export function create(x: number, y: number, frontColor: color.Color): Card {
   const pos = vec2.create(x, y);
   const w = 2 * TILE;
   const h = 3 * TILE;
@@ -31,7 +32,7 @@ export function create(x: number, y: number, frontColor: string): Card {
     scale: 1,
     dscale: 0,
     w, h,
-    color: { back: "black", front: frontColor },
+    color: { back: color.create(0, 0, 0), front: frontColor },
     alpha: 1,
     dalpha: 0
   };
@@ -41,8 +42,13 @@ export function draw(c: Card, ctx: CanvasRenderingContext2D) {
   ctx.translate(c.center.x, c.center.y);
   ctx.scale(c.scale, 1);
   ctx.translate(-c.center.x, -c.center.y);
-  const color = `rgba(${c.scale > 0 ? "0, 0, 0" : "255, 0, 0"}, ${c.alpha})`;
-  ctx.fillStyle = color;
+
+  color.setAlpha(c.color.front, c.alpha);
+
+  ctx.fillStyle = c.scale > 0
+    ? color.toString(c.color.back)
+    : color.toString(c.color.front);
+
   ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
