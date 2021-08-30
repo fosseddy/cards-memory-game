@@ -2,37 +2,34 @@ import { TILE, C_WIDTH, C_HEIGHT } from "./constants";
 import { createAndAppendTo } from "./canvas";
 import { getRelativeMouseCoords, clickedInside } from "./utils";
 import * as card from "./card";
-
-type Game = {
-  cards: card.Card[];
-  flipped: card.Card[];
-  correct: card.Card[];
-  unflipDelay: number;
-}
-
-function gameGetAvailableCards(g: Game): card.Card[] {
-  return g.cards.filter(c => !g.correct.includes(c));
-}
+import * as animation from "./animation";
 
 // DEV VARIABLES
 window.showGrid = false;
 window.flipSpeed = 5;
+window.fadeSpeed = 4;
 window.unflipDelay = 100 * 0.001;
+
+// GAME
+type Game = {
+  cards: card.Card[];
+  flipped: card.Card[];
+  unflipDelay: number;
+}
 
 const { canvas, ctx } = createAndAppendTo(document.body);
 
 const game: Game = {
   cards: [
-    card.create(2 * TILE, 2 * TILE, "red"),
-    card.create(5 * TILE, 2 * TILE, "blue"),
-    card.create(8 * TILE, 2 * TILE, "green"),
-    card.create(11 * TILE, 2 * TILE, "green"),
-    card.create(14 * TILE, 2 * TILE, "blue"),
-    card.create(17 * TILE, 2 * TILE, "red"),
+    card.create(2 * TILE, 2 * TILE, "#f00"),
+    card.create(5 * TILE, 2 * TILE, "#00f"),
+    card.create(8 * TILE, 2 * TILE, "#0f0"),
+    card.create(11 * TILE, 2 * TILE, "#0f0"),
+    card.create(14 * TILE, 2 * TILE, "#00f"),
+    card.create(17 * TILE, 2 * TILE, "#f00"),
   ],
   flipped: [],
-  correct: [],
-  unflipDelay: window.unflipDelay,
+  unflipDelay: window.unflipDelay
 }
 
 let prevTimestamp = 0;
@@ -48,39 +45,43 @@ function gameLoop(timestamp: number) {
   prevTimestamp = timestamp;
 
   // UPDATE
-  const board = gameGetAvailableCards(game);
-
-  for (const c of board) {
-    card.update(c, dt);
-  }
-
-  for (const c of board) {
-    if (!game.flipped.includes(c) && c.scale <= -1) {
+  for (const c of game.cards) {
+    if (!game.flipped.includes(c) && animation.isFlipped(c)) {
       game.flipped.push(c);
     }
   }
 
   if (game.flipped.length >= 2) {
     const [c1, c2] = game.flipped;
-    if (!c1 || !c2) throw new Error("WTF");
+    if (!c1 || !c2) throw new Error("Will this ever happen though?");
 
     if (c1.color.front === c2.color.front) {
-      game.correct.push(c1, c2);
-      game.flipped = [];
+      if (animation.isVisible(c1) && animation.isVisible(c2)) {
+        animation.fadeOut(c1, window.fadeSpeed);
+        animation.fadeOut(c2, window.fadeSpeed);
+      } else {
+        game.cards = game.cards.filter(c => !game.flipped.includes(c));
+        game.flipped = [];
+        game.unflipDelay = window.unflipDelay;
+      }
     } else {
       if (game.unflipDelay <= 0) {
         game.unflipDelay = window.unflipDelay;
         game.flipped = [];
 
-        for (const c of board) {
-          if (c.scale <= -1) {
-            c.dscale = window.flipSpeed;
+        for (const c of game.cards) {
+          if (animation.isFlipped(c)) {
+            animation.unflip(c, window.flipSpeed);
           }
         }
       } else {
         game.unflipDelay -= dt;
       }
     }
+  }
+
+  for (const c of game.cards) {
+    card.update(c, dt);
   }
 
   // DRAW
@@ -90,15 +91,13 @@ function gameLoop(timestamp: number) {
     card.draw(c, ctx);
   }
 
-
   ctx.fillStyle = "black";
   ctx.textAlign = "center";
   ctx.font = "40px serif";
-  if (game.correct.length === game.cards.length) {
-    ctx.fillText("You are the Winner!", C_WIDTH / 2, C_HEIGHT / 2 + 30);
+  if (game.cards.length === 0) {
+    ctx.fillText("You are the Winner!", C_WIDTH / 2, C_HEIGHT / 2);
   } else {
     ctx.fillText("flipped: " + String(game.flipped.length), C_WIDTH / 2, C_HEIGHT / 2 + 30);
-    ctx.fillText("correct: " + String(game.correct.length), C_WIDTH / 2, C_HEIGHT / 2 + 80);
   }
 
   if (window.showGrid) {
@@ -126,15 +125,18 @@ canvas.addEventListener("click", (event: MouseEvent) => {
   const mouse = getRelativeMouseCoords(event);
 
   let flippedOrFlippingCount = 0;
-  for (const c of gameGetAvailableCards(game)) {
-    if (c.scale < 1) flippedOrFlippingCount += 1;
+  for (const c of game.cards) {
+    if (animation.isFlipped(c) || animation.isFlipping(c)) {
+      flippedOrFlippingCount += 1;
+    }
   }
 
   for (const c of game.cards) {
     if (!clickedInside(c, mouse) ||
-        c.scale < 1 ||
+        animation.isFlipped(c) ||
         flippedOrFlippingCount >= 2) continue;
-    c.dscale = -window.flipSpeed;
+
+    animation.flip(c, window.flipSpeed);
   }
 });
 

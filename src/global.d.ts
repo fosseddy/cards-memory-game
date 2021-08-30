@@ -5,5 +5,6 @@ declare global {
     showGrid: boolean;
     flipSpeed: number;
     unflipDelay: number;
+    fadeSpeed: number;
   }
 }
