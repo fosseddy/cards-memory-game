@@ -11,11 +11,11 @@ type CardColor = {
 export type Card = {
   pos: vec2.Vec2;
   center: vec2.Vec2;
-  scale: number;
-  dscale: number;
+  color: CardColor;
   w: number;
   h: number;
-  color: CardColor;
+  scale: number;
+  dscale: number;
   alpha: number;
   dalpha: number;
 }
@@ -29,10 +29,10 @@ export function create(x: number, y: number, frontColor: color.Color): Card {
   return {
     pos,
     center,
-    scale: 1,
-    dscale: 0,
     w, h,
     color: { back: color.create(0, 0, 0), front: frontColor },
+    scale: 1,
+    dscale: 0,
     alpha: 1,
     dalpha: 0
   };
@@ -75,6 +75,4 @@ export function update(c: Card, dt: number) {
 
   c.color.front.a = c.alpha;
   c.color.back.a = c.alpha;
-
-  console.log(c);
 }
