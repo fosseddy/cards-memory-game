@@ -4,7 +4,7 @@ import { TILE } from "./constants";
 export const BUTTON_WIDTH = TILE * 10;
 export const BUTTON_HEIGHT = TILE * 3;
 
-export enum UIElementType {
+enum UIElementType {
   Text = 0,
   Button
 }
