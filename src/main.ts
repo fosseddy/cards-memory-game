@@ -2,11 +2,11 @@ import { TILE, C_WIDTH, C_HEIGHT } from "./constants";
 import { createAndAppendTo } from "./canvas";
 import { getRelativeMouseCoords, clickedInside } from "./utils";
 import * as card from "./card";
-import * as animate from "./animate";
 import * as color from "./color";
 
 // DEV VARIABLES
 window.showGrid = false;
+window.showCardFront = false;
 window.flipSpeed = 5;
 window.fadeSpeed = 4;
 window.unflipDelay = 100 * 0.001;
@@ -98,7 +98,7 @@ function gameLoop(timestamp: number) {
 
   // UPDATE
   for (const c of game.cards) {
-    if (!game.flipped.includes(c) && animate.isFlipped(c)) {
+    if (!game.flipped.includes(c) && c.scale <= -1) {
       game.flipped.push(c);
     }
   }
@@ -108,9 +108,8 @@ function gameLoop(timestamp: number) {
     if (!c1 || !c2) throw new Error("Will this ever happen though?");
 
     if (color.areEquals(c1.color.front, c2.color.front)) {
-      if (animate.isVisible(c1) && animate.isVisible(c2)) {
-        animate.fadeOut(c1, window.fadeSpeed);
-        animate.fadeOut(c2, window.fadeSpeed);
+      if (c1.alpha > 0 || c2.alpha > 0) {
+        c1.dalpha = c2.dalpha = -window.fadeSpeed;
       } else {
         game.cards = game.cards.filter(c => !game.flipped.includes(c));
         game.flipped = [];
@@ -122,8 +121,8 @@ function gameLoop(timestamp: number) {
         game.flipped = [];
 
         for (const c of game.cards) {
-          if (animate.isFlipped(c)) {
-            animate.unflip(c, window.flipSpeed);
+          if (c.scale <= -1) {
+            c.dscale = window.flipSpeed;
           }
         }
       } else {
@@ -169,24 +168,28 @@ canvas.addEventListener("click", (event: MouseEvent) => {
 
   let flippedOrFlippingCount = 0;
   for (const c of game.cards) {
-    if (animate.isFlipped(c) || animate.isFlipping(c)) {
+    if (c.scale < 1) {
       flippedOrFlippingCount += 1;
     }
   }
 
   for (const c of game.cards) {
     if (!clickedInside(c, mouse) ||
-        animate.isFlipped(c) ||
+        c.scale <= -1 ||
         flippedOrFlippingCount >= 2) continue;
 
-    animate.flip(c, window.flipSpeed);
+    c.dscale = -window.flipSpeed;
   }
 });
 
 document.addEventListener("keypress", (event: KeyboardEvent) => {
-  switch (event.keyCode) {
-    case 103: {
+  switch (event.code) {
+    case 'KeyG': {
       window.showGrid = !window.showGrid;
+    } break;
+
+    case 'KeyF': {
+      window.showCardFront = !window.showCardFront;
     } break;
 
     default:

@@ -45,9 +45,13 @@ export function draw(c: Card, ctx: CanvasRenderingContext2D) {
 
   color.setAlpha(c.color.front, c.alpha);
 
-  ctx.fillStyle = c.scale > 0
-    ? color.toString(c.color.back)
-    : color.toString(c.color.front);
+  if (window.showCardFront) {
+    ctx.fillStyle = color.toString(c.color.front);
+  } else {
+    ctx.fillStyle = c.scale > 0
+      ? color.toString(c.color.back)
+      : color.toString(c.color.front);
+  }
 
   ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
   ctx.setTransform(1, 0, 0, 1, 0, 0);
