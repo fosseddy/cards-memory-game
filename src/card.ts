@@ -43,8 +43,6 @@ export function draw(c: Card, ctx: CanvasRenderingContext2D) {
   ctx.scale(c.scale, 1);
   ctx.translate(-c.center.x, -c.center.y);
 
-  color.setAlpha(c.color.front, c.alpha);
-
   if (window.showCardFront) {
     ctx.fillStyle = color.toString(c.color.front);
   } else {
@@ -54,6 +52,11 @@ export function draw(c: Card, ctx: CanvasRenderingContext2D) {
   }
 
   ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
+
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = color.toString(c.color.back);
+  ctx.strokeRect(c.pos.x, c.pos.y, c.w, c.h);
+
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
@@ -67,4 +70,7 @@ export function update(c: Card, dt: number) {
   if (c.alpha >= 1 || c.alpha <= 0) {
     c.dalpha = 0;
   }
+
+  c.color.front.a = c.alpha;
+  c.color.back.a = c.alpha;
 }

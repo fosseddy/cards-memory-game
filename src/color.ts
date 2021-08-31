@@ -24,7 +24,3 @@ export function areEquals(c1: Color, c2: Color): boolean {
 
   return true;
 }
-
-export function setAlpha(c: Color, a: number) {
-  c.a = a;
-}

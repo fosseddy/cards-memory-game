@@ -6,7 +6,7 @@ import * as color from "./color";
 
 // DEV VARIABLES
 window.showGrid = false;
-window.showCardFront = false;
+window.showCardFront = true;
 window.flipSpeed = 5;
 window.fadeSpeed = 4;
 window.unflipDelay = 100 * 0.001;
@@ -14,7 +14,7 @@ window.unflipDelay = 100 * 0.001;
 // GAME
 type Game = {
   cards: card.Card[];
-  flipped: card.Card[];
+  flippedCards: card.Card[];
   unflipDelay: number;
 }
 
@@ -80,7 +80,7 @@ function fillCards(): card.Card[] {
 
 const game: Game = {
   cards: fillCards(),
-  flipped: [],
+  flippedCards: [],
   unflipDelay: window.unflipDelay
 }
 
@@ -97,28 +97,28 @@ function gameLoop(timestamp: number) {
   prevTimestamp = timestamp;
 
   // UPDATE
+  game.flippedCards = [];
   for (const c of game.cards) {
-    if (!game.flipped.includes(c) && c.scale <= -1) {
-      game.flipped.push(c);
+    if (c.scale <= -1) {
+      game.flippedCards.push(c);
     }
   }
 
-  if (game.flipped.length >= 2) {
-    const [c1, c2] = game.flipped;
+  if (game.flippedCards.length >= 2) {
+    const [c1, c2] = game.flippedCards;
     if (!c1 || !c2) throw new Error("Will this ever happen though?");
 
     if (color.areEquals(c1.color.front, c2.color.front)) {
       if (c1.alpha > 0 || c2.alpha > 0) {
         c1.dalpha = c2.dalpha = -window.fadeSpeed;
       } else {
-        game.cards = game.cards.filter(c => !game.flipped.includes(c));
-        game.flipped = [];
-        game.unflipDelay = window.unflipDelay;
+        game.cards = game.cards.filter(c => !game.flippedCards.includes(c));
+        game.flippedCards = [];
       }
     } else {
       if (game.unflipDelay <= 0) {
         game.unflipDelay = window.unflipDelay;
-        game.flipped = [];
+        game.flippedCards = [];
 
         for (const c of game.cards) {
           if (c.scale <= -1) {
