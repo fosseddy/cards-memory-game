@@ -6,6 +6,6 @@ declare global {
     showCardFront: boolean;
     flipSpeed: number;
     unflipDelay: number;
-    fadeSpeed: number;
+    fadeOutSpeed: number;
   }
 }
