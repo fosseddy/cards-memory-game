@@ -61,6 +61,8 @@ export function draw(c: Card, ctx: CanvasRenderingContext2D) {
 }
 
 export function update(c: Card, dt: number) {
+  if (c.dscale === 0 && c.dalpha === 0) return;
+
   c.scale = toFixed(c.scale + c.dscale * dt, 1);
   if (c.scale <= -1 || c.scale >= 1) {
     c.dscale = 0;
@@ -73,4 +75,6 @@ export function update(c: Card, dt: number) {
 
   c.color.front.a = c.alpha;
   c.color.back.a = c.alpha;
+
+  console.log(c);
 }
