@@ -7,20 +7,20 @@ interface Hoverable {
     hoveredColor: Color;
 }
 
-interface UIElementBase {
+export interface UIElement {
     pos: Vec2;
     color: Color;
     draw: (ctx: CanvasRenderingContext2D) => void;
 }
 
-interface UIElementText extends UIElementBase {
+interface UIElementText extends UIElement {
     text: string;
     font: string;
     align: CanvasTextAlign | "";
     baseline: CanvasTextBaseline | "";
 }
 
-interface UIElementButton extends UIElementBase, Hoverable {
+interface UIElementButton extends UIElement, Hoverable {
     text: Text;
     w: number;
     h: number;
