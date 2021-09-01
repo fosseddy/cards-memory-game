@@ -53,8 +53,7 @@ const game: Game = {
 const menuHeader = new ui.Text(
     "Card Memory Game",
     Canvas.WIDTH / 2,
-    Canvas.TILE * 6
-);
+    Canvas.TILE * 6);
 menuHeader.font = "50px serif";
 menuHeader.align = "center";
 
