@@ -30,6 +30,7 @@ export class Card {
     }
 
     draw(ctx: CanvasRenderingContext2D) {
+        ctx.save();
         ctx.translate(this.center.x, this.center.y);
         ctx.scale(this.scale, 1);
         ctx.translate(-this.center.x, -this.center.y);
@@ -49,6 +50,7 @@ export class Card {
         ctx.strokeRect(this.pos.x, this.pos.y, this.w, this.h);
 
         ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.restore();
     }
 
     update(dt: number) {

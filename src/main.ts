@@ -140,16 +140,14 @@ function gameLoop(timestamp: number) {
 
     switch (game.state) {
     case GameState.Menu: {
-        for (const m of game.menu) {
-            m.draw(ctx);
+        for (const item of game.menu) {
+            item.draw(ctx);
         }
-        resetStyle(ctx);
     } break;
 
     case GameState.Running: {
         for (const c of game.cards) {
             c.draw(ctx);
-            resetStyle(ctx);
         }
     } break;
 
@@ -170,8 +168,6 @@ function gameLoop(timestamp: number) {
         }
 
         ctx.stroke();
-
-        resetStyle(ctx);
     }
 
     requestAnimationFrame(gameLoop);
@@ -184,14 +180,14 @@ canvas.el.addEventListener("mousemove", (event: MouseEvent) => {
 
     switch (game.state) {
     case GameState.Menu: {
-        for (const m of game.menu) {
-            if (!(m instanceof ui.Button)) continue;
+        for (const item of game.menu) {
+            if (!(item instanceof ui.Button)) continue;
 
-            if (isInside(m, mouse)) {
-                m.hovered = true;
+            if (isInside(item, mouse)) {
+                item.hovered = true;
                 canvas.el.style.cursor = "pointer";
             } else {
-                m.hovered = false;
+                item.hovered = false;
                 canvas.el.style.cursor = "default";
             }
         }
@@ -206,11 +202,11 @@ canvas.el.addEventListener("click", (event: MouseEvent) => {
 
     switch (game.state) {
     case GameState.Menu: {
-        for (const m of game.menu) {
-            if (!(m instanceof ui.Button)) continue;
-            if (!isInside(m, mouse)) continue;
+        for (const item of game.menu) {
+            if (!(item instanceof ui.Button)) continue;
+            if (!isInside(item, mouse)) continue;
 
-            m.onClick();
+            item.onClick();
             canvas.el.style.cursor = "default";
         }
     } break;
@@ -292,13 +288,4 @@ function fillCards(): Card[] {
     }
 
     return cards;
-}
-
-function resetStyle(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = "#000";
-    ctx.strokeStyle = "#000";
-    ctx.lineWidth = 1;
-    ctx.font = "10px serif";
-    ctx.textAlign = "start";
-    ctx.textBaseline = "alphabetic";
 }

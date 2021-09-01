@@ -1,14 +1,14 @@
 export class Canvas {
     static TILE = 20;
     static WIDTH = Canvas.TILE * 32;
-    static HEIGHT = Canvas.TILE * 32;
+    static HEIGHT = Canvas.TILE * 29;
 
     el: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
 
     constructor(container: HTMLElement) {
         this.el = document.createElement("canvas");
-        this.ctx = (() => {
+        this.ctx = ((): CanvasRenderingContext2D => {
             const ctx = this.el.getContext("2d");
 
             if (!ctx) {
