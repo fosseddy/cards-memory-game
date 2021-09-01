@@ -1,26 +1,20 @@
-export type Color = {
-  [key: string]: number;
-  r: number;
-  g: number;
-  b: number;
-  a: number;
-}
+export class Color {
+    constructor(
+            public r: number,
+            public g: number,
+            public b: number,
+            public a: number = 1) {}
 
-export function create(r: number, g: number, b: number, a: number = 1): Color {
-  return { r, g, b, a };
-}
+    toString(): string {
+        return `rgba(${this.r}, ${this.g}, ${this.b}, ${this.a})`;
+    }
 
-export function toString(c: Color): string {
-  return `rgba(${c.r}, ${c.g}, ${c.b}, ${c.a})`;
-}
-
-export function areEquals(c1: Color, c2: Color): boolean {
-  let acc = true;
-
-  for (const k of Object.keys(c1)) {
-    acc &&= c1[k] === c2[k];
-    if (!acc) return false;
-  }
-
-  return true;
+    isEqualTo(c: Color): boolean {
+        return (
+            this.r === c.r &&
+            this.g === c.g &&
+            this.b === c.b &&
+            this.a === c.a
+        );
+    }
 }
