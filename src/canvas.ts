@@ -1,28 +1,29 @@
-import { C_WIDTH, C_HEIGHT } from "./constants";
+export class Canvas {
+    static TILE = 20;
+    static WIDTH = Canvas.TILE * 32;
+    static HEIGHT = Canvas.TILE * 32;
 
-type CanvasData = {
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-}
+    el: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
 
-export function createAndAppendTo(el: HTMLElement): CanvasData {
-  const canvas = document.createElement("canvas");
-  const ctx: CanvasRenderingContext2D = (() => {
-    const ctx = canvas.getContext("2d");
+    constructor(container: HTMLElement) {
+        this.el = document.createElement("canvas");
+        this.ctx = (() => {
+            const ctx = this.el.getContext("2d");
 
-    if (!ctx) {
-      throw new Error("Tried to access 2d canvas rendering context," +
-                      " but unlucky.");
+            if (!ctx) {
+                throw new Error(
+                    "Tried to access 2d canvas rendering context," +
+                    " but unlucky.");
+            }
+
+            return ctx;
+        })();
+
+        this.el.width = Canvas.WIDTH;
+        this.el.height = Canvas.HEIGHT;
+        this.el.style.border = "1px solid black";
+
+        container.appendChild(this.el);
     }
-
-    return ctx;
-  })();
-
-  canvas.width = C_WIDTH;
-  canvas.height = C_HEIGHT;
-  canvas.style.border = "1px solid black";
-
-  el.appendChild(canvas);
-
-  return { canvas, ctx };
 }
