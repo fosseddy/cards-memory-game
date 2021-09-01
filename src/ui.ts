@@ -1,8 +1,8 @@
-import * as v2 from "./vec2";
-import { TILE } from "./constants";
+import { Canvas } from "./canvas";
+import { Vec2 } from "./vec2";
 
-export const BUTTON_WIDTH = TILE * 10;
-export const BUTTON_HEIGHT = TILE * 3;
+export const BUTTON_WIDTH = Canvas.TILE * 10;
+export const BUTTON_HEIGHT = Canvas.TILE * 3;
 
 enum UIElementType {
   Text = 0,
@@ -11,7 +11,7 @@ enum UIElementType {
 
 type UIBaseElement = {
   type: UIElementType;
-  pos: v2.Vec2;
+  pos: Vec2;
 }
 
 type Text = UIBaseElement & {
@@ -26,6 +26,7 @@ type Button = UIBaseElement & {
   w: number;
   h: number;
   hovered: boolean;
+  onClick: () => void;
 }
 
 export type UIElement = Text | Button
@@ -33,7 +34,7 @@ export type UIElement = Text | Button
 export function text(t: string, x: number, y: number): Text {
   return {
     type: UIElementType.Text,
-    pos: v2.create(x, y),
+    pos: new Vec2(x, y),
     text: t,
     align: "",
     baseline: "",
@@ -41,8 +42,9 @@ export function text(t: string, x: number, y: number): Text {
   };
 }
 
-export function button(t: string, x: number, y: number,
-    w: number = BUTTON_WIDTH, h: number = BUTTON_HEIGHT): Button {
+export function button(t: string, x: number, y: number): Button {
+  const w = BUTTON_WIDTH;
+  const h = BUTTON_HEIGHT;
   const btnText = text(t, x + w / 2, y + h / 2);
   btnText.align = "center";
   btnText.baseline = "middle";
@@ -51,9 +53,10 @@ export function button(t: string, x: number, y: number,
   return {
     type: UIElementType.Button,
     text: btnText,
-    pos: v2.create(x, y),
+    pos: new Vec2(x, y),
     w, h,
-    hovered: false
+    hovered: false,
+    onClick: () => {}
   };
 }
 
