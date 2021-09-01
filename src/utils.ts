@@ -22,3 +22,19 @@ export function isInside(s: Shape, mouse: Vec2): boolean {
     return mouse.x >= s.pos.x && mouse.x <= s.pos.x + s.w &&
         mouse.y >= s.pos.y && mouse.y <= s.pos.y + s.h;
 }
+
+export function shuffle<T>(arr: T[]): T[] {
+    let newArr = [...arr];
+
+    let ci = arr.length;
+    let ri = 0;
+
+    while (ci !== 0) {
+        ri = Math.floor(Math.random() * ci);
+        ci -= 1;
+
+        [newArr[ci], newArr[ri]] = [newArr[ri]!, newArr[ci]!];
+    }
+
+    return newArr;
+}
