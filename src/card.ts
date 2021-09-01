@@ -3,7 +3,6 @@ import { Canvas } from "./canvas";
 import { Vec2 } from "./vec2";
 import { Color } from "./color";
 
-
 type CardColor = {
     front: Color;
     back: Color;
