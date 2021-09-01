@@ -32,7 +32,7 @@ type Game = {
     flippedCards: Card[];
     state: GameState;
     unflipDelay: number;
-    menu: ui.UIElement[]
+    menu: Array<ui.Text | ui.Button>
 }
 
 enum GameState {
@@ -52,13 +52,16 @@ const game: Game = {
     menu: []
 }
 
-const menuHeader = ui.text("Card Memory Game", Canvas.WIDTH / 2, Canvas.TILE * 6);
+const menuHeader = new ui.Text(
+    "Card Memory Game",
+    Canvas.WIDTH / 2,
+    Canvas.TILE * 6);
 menuHeader.font = "50px serif";
 menuHeader.align = "center";
 
-const startButton = ui.button(
+const startButton = new ui.Button(
     "Start",
-    Canvas.WIDTH / 2 - ui.BUTTON_WIDTH / 2,
+    Canvas.WIDTH / 2 - ui.Button.WIDTH / 2,
     Canvas.TILE * 10);
 
 startButton.onClick = () => {
@@ -67,7 +70,6 @@ startButton.onClick = () => {
 
 game.menu.push(menuHeader);
 game.menu.push(startButton);
-
 
 let prevTimestamp = 0;
 function gameLoop(timestamp: number) {
@@ -84,95 +86,95 @@ function gameLoop(timestamp: number) {
 
     // UPDATE
     switch (game.state) {
-        case GameState.Menu: {
-        } break;
+    case GameState.Menu: {
+    } break;
 
-        case GameState.Running: {
-            game.flippedCards = [];
-            for (const c of game.cards) {
-                if (c.scale <= -1) {
-                    game.flippedCards.push(c);
-                }
+    case GameState.Running: {
+        game.flippedCards = [];
+        for (const c of game.cards) {
+            if (c.scale <= -1) {
+                game.flippedCards.push(c);
+            }
+        }
+
+        if (game.flippedCards.length >= 2) {
+            const [c1, c2] = game.flippedCards;
+            if (!c1 || !c2) {
+                throw new Error("Will this ever happen though?");
             }
 
-            if (game.flippedCards.length >= 2) {
-                const [c1, c2] = game.flippedCards;
-                if (!c1 || !c2) {
-                    throw new Error("Will this ever happen though?");
+            if (c1.color.front.isEqualTo(c2.color.front)) {
+                if (c1.alpha > 0 || c2.alpha > 0) {
+                    c1.dalpha = c2.dalpha = -window.fadeOutSpeed;
+                } else {
+                    game.cards = game.cards.filter(
+                        c => !game.flippedCards.includes(c));
+                    game.flippedCards = [];
                 }
+            } else {
+                if (game.unflipDelay <= 0) {
+                    game.unflipDelay = window.unflipDelay;
+                    game.flippedCards = [];
 
-                if (c1.color.front.isEqualTo(c2.color.front)) {
-                    if (c1.alpha > 0 || c2.alpha > 0) {
-                        c1.dalpha = c2.dalpha = -window.fadeOutSpeed;
-                    } else {
-                        game.cards = game.cards.filter(
-                            c => !game.flippedCards.includes(c));
-                        game.flippedCards = [];
+                    for (const c of game.cards) {
+                        if (c.scale <= -1) {
+                            c.dscale = window.flipSpeed;
+                        }
                     }
                 } else {
-                    if (game.unflipDelay <= 0) {
-                        game.unflipDelay = window.unflipDelay;
-                        game.flippedCards = [];
-
-                        for (const c of game.cards) {
-                            if (c.scale <= -1) {
-                                c.dscale = window.flipSpeed;
-                            }
-                        }
-                    } else {
-                        game.unflipDelay -= dt;
-                    }
+                    game.unflipDelay -= dt;
                 }
             }
+        }
 
-            for (const c of game.cards) {
-                c.update(dt);
-            }
-        } break;
+        for (const c of game.cards) {
+            c.update(dt);
+        }
+    } break;
 
-        default:
+    default:
     }
 
-        // DRAW
-        ctx.clearRect(0, 0, Canvas.WIDTH, Canvas.HEIGHT);
+    // DRAW
+    ctx.clearRect(0, 0, Canvas.WIDTH, Canvas.HEIGHT);
 
-        switch (game.state) {
-            case GameState.Menu: {
-                for (const m of game.menu) {
-                    ui.draw(m, ctx);
-                }
-                resetStyle(ctx);
-            } break;
-
-            case GameState.Running: {
-                for (const c of game.cards) {
-                    c.draw(ctx);
-                    resetStyle(ctx);
-                }
-            } break;
-
-            default:
+    switch (game.state) {
+    case GameState.Menu: {
+        for (const m of game.menu) {
+            m.draw(ctx);
         }
+        resetStyle(ctx);
+    } break;
 
-        if (window.showGrid) {
-            ctx.beginPath();
-
-            for (let x = Canvas.TILE; x < Canvas.WIDTH; x += Canvas.TILE) {
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, Canvas.HEIGHT);
-            }
-
-            for (let y = Canvas.TILE; y < Canvas.HEIGHT; y += Canvas.TILE) {
-                ctx.moveTo(0, y);
-                ctx.lineTo(Canvas.WIDTH, y);
-            }
-
-            ctx.stroke();
-
+    case GameState.Running: {
+        for (const c of game.cards) {
+            c.draw(ctx);
             resetStyle(ctx);
         }
+    } break;
 
-        requestAnimationFrame(gameLoop);
+    default:
+    }
+
+    if (window.showGrid) {
+        ctx.beginPath();
+
+        for (let x = Canvas.TILE; x < Canvas.WIDTH; x += Canvas.TILE) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, Canvas.HEIGHT);
+        }
+
+        for (let y = Canvas.TILE; y < Canvas.HEIGHT; y += Canvas.TILE) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(Canvas.WIDTH, y);
+        }
+
+        ctx.stroke();
+
+        resetStyle(ctx);
+    }
+
+    requestAnimationFrame(gameLoop);
 }
 
 requestAnimationFrame(gameLoop);
@@ -181,21 +183,21 @@ canvas.el.addEventListener("mousemove", (event: MouseEvent) => {
     const mouse = getRelativeMouseCoords(event);
 
     switch (game.state) {
-        case GameState.Menu: {
-            for (const m of game.menu) {
-                if ("hovered" in m) {
-                    if (isInside(m, mouse)) {
-                        m.hovered = true;
-                        canvas.el.style.cursor = "pointer";
-                    } else {
-                        m.hovered = false;
-                        canvas.el.style.cursor = "default";
-                    }
-                }
-            }
-        } break;
+    case GameState.Menu: {
+        for (const m of game.menu) {
+            if (!(m instanceof ui.Button)) continue;
 
-        default:
+            if (isInside(m, mouse)) {
+                m.hovered = true;
+                canvas.el.style.cursor = "pointer";
+            } else {
+                m.hovered = false;
+                canvas.el.style.cursor = "default";
+            }
+        }
+    } break;
+
+    default:
     }
 });
 
@@ -203,48 +205,49 @@ canvas.el.addEventListener("click", (event: MouseEvent) => {
     const mouse = getRelativeMouseCoords(event);
 
     switch (game.state) {
-        case GameState.Menu: {
-            for (const m of game.menu) {
-                if ("onClick" in m) {
-                    if (!isInside(m, mouse)) continue;
-                    m.onClick();
-                    canvas.el.style.cursor = "default";
-                }
-            }
-        } break;
-case GameState.Running: {
-            let flippedOrFlippingCount = 0;
-            for (const c of game.cards) {
-                if (c.scale < 1) {
-                    flippedOrFlippingCount += 1;
-                }
-            }
+    case GameState.Menu: {
+        for (const m of game.menu) {
+            if (!(m instanceof ui.Button)) continue;
+            if (!isInside(m, mouse)) continue;
 
-            for (const c of game.cards) {
-                if (!isInside(c, mouse) ||
-                    c.scale <= -1 ||
-                        flippedOrFlippingCount >= 2) continue;
+            m.onClick();
+            canvas.el.style.cursor = "default";
+        }
+    } break;
 
-                    c.dscale = -window.flipSpeed;
+    case GameState.Running: {
+        let flippedOrFlippingCount = 0;
+        for (const c of game.cards) {
+            if (c.scale < 1) {
+                flippedOrFlippingCount += 1;
             }
-        } break;
+        }
 
-        default:
+        for (const c of game.cards) {
+            if (!isInside(c, mouse) ||
+                c.scale <= -1 ||
+                    flippedOrFlippingCount >= 2) continue;
+
+                c.dscale = -window.flipSpeed;
+        }
+    } break;
+
+    default:
     }
 });
 
 document.addEventListener("keypress", (event: KeyboardEvent) => {
     switch (event.code) {
-        case 'KeyG': {
-            window.showGrid = !window.showGrid;
-        } break;
+    case 'KeyG': {
+        window.showGrid = !window.showGrid;
+    } break;
 
-        case 'KeyF': {
-            window.showCardFront = !window.showCardFront;
-        } break;
+    case 'KeyF': {
+        window.showCardFront = !window.showCardFront;
+    } break;
 
-        default:
-            return;
+    default:
+        return;
     }
 });
 

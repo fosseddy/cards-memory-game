@@ -1,105 +1,86 @@
 import { Canvas } from "./canvas";
 import { Vec2 } from "./vec2";
 
-export const BUTTON_WIDTH = Canvas.TILE * 10;
-export const BUTTON_HEIGHT = Canvas.TILE * 3;
+//enum UIElementType {
+//  Text = 0,
+//  Button
+//}
 
-enum UIElementType {
-  Text = 0,
-  Button
-}
-
-type UIBaseElement = {
-  type: UIElementType;
+interface UIElementBase {
   pos: Vec2;
+  draw: (ctx: CanvasRenderingContext2D) => void;
 }
 
-type Text = UIBaseElement & {
-  align: CanvasTextAlign | "";
-  baseline: CanvasTextBaseline | "";
-  text: string;
-  font: string;
+interface UIElementText extends UIElementBase {
+    text: string;
+    font: string;
+    align: CanvasTextAlign | "";
+    baseline: CanvasTextBaseline | "";
 }
 
-type Button = UIBaseElement & {
-  text: Text;
-  w: number;
-  h: number;
-  hovered: boolean;
-  onClick: () => void;
+interface UIElementButton extends UIElementBase {
+    text: Text;
+    w: number;
+    h: number;
+    hovered: boolean;
+    onClick: () => void;
 }
 
-export type UIElement = Text | Button
+export class Text implements UIElementText {
+    pos: Vec2;
+    text: string;
 
-export function text(t: string, x: number, y: number): Text {
-  return {
-    type: UIElementType.Text,
-    pos: new Vec2(x, y),
-    text: t,
-    align: "",
-    baseline: "",
-    font: ""
-  };
+    align: CanvasTextAlign | "" = "";
+    baseline: CanvasTextBaseline | "" = "";
+    font: string = "";
+
+    constructor(text: string, x: number, y: number) {
+        this.pos = new Vec2(x, y);
+        this.text = text;
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        if (this.align) ctx.textAlign = this.align;
+        if (this.baseline) ctx.textBaseline = this.baseline;
+        if (this.font) ctx.font = this.font;
+
+        ctx.fillText(this.text, this.pos.x, this.pos.y);
+    }
 }
 
-export function button(t: string, x: number, y: number): Button {
-  const w = BUTTON_WIDTH;
-  const h = BUTTON_HEIGHT;
-  const btnText = text(t, x + w / 2, y + h / 2);
-  btnText.align = "center";
-  btnText.baseline = "middle";
-  btnText.font = "25px serif";
+export class Button implements UIElementButton {
+    static WIDTH = Canvas.TILE * 10;
+    static HEIGHT = Canvas.TILE * 3;
 
-  return {
-    type: UIElementType.Button,
-    text: btnText,
-    pos: new Vec2(x, y),
-    w, h,
-    hovered: false,
-    onClick: () => {}
-  };
-}
+    pos: Vec2;
+    text: Text;
 
-export function draw(e: UIElement, ctx: CanvasRenderingContext2D) {
-  switch (e.type) {
-    case UIElementType.Text: {
-      textDraw(e as Text, ctx);
-    } break;
+    w: number = Button.WIDTH;
+    h: number = Button.HEIGHT;
+    hovered: boolean = false;
 
-    case UIElementType.Button: {
-      buttonDraw(e as Button, ctx);
-    } break;
+    onClick: () => void = () => {};
 
-    default:
-      return;
-  }
-}
+    constructor(text: string, x: number, y: number) {
+        this.pos = new Vec2(x, y);
+        this.text = new Text(text, x + this.w / 2, y + this.h / 2);
+        this.text.align = "center";
+        this.text.baseline = "middle";
+        this.text.font = "25px serif";
+    }
 
-function textDraw(t: Text, ctx: CanvasRenderingContext2D) {
-  const { text, align, baseline, font } = t;
-  const { x, y } = t.pos;
+    draw(ctx: CanvasRenderingContext2D) {
+        if (this.hovered) {
+            ctx.fillRect(this.pos.x, this.pos.y, this.w, this.h);
+        } else {
+            ctx.lineWidth = 2;
+            ctx.strokeRect(this.pos.x, this.pos.y, this.w, this.h);
+        }
 
-  if (align) ctx.textAlign = align;
-  if (baseline) ctx.textBaseline = baseline;
-  if (font) ctx.font = font;
+        if (this.hovered) {
+            ctx.fillStyle = "#fff";
+        }
 
-  ctx.fillText(text, x, y);
-}
-
-function buttonDraw(b: Button, ctx: CanvasRenderingContext2D) {
-  const { x, y } = b.pos;
-  const { w, h, hovered, text } = b;
-
-  if (hovered) {
-    ctx.fillRect(x, y, w, h);
-  } else {
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x, y, w, h);
-  }
-
-  if (hovered) {
-    ctx.fillStyle = "#fff";
-  }
-
-  textDraw(text, ctx);
+        this.text.draw(ctx);
+    }
 }
