@@ -1,78 +1,71 @@
-import { TILE } from "./constants";
 import { toFixed } from "./utils";
-import * as vec2 from "./vec2";
-import * as color from "./color";
+import { Canvas } from "./canvas";
+import { Vec2 } from "./vec2";
+import { Color } from "./color";
+
 
 type CardColor = {
-  front: color.Color;
-  back: color.Color;
+    front: Color;
+    back: Color;
 }
 
-export type Card = {
-  pos: vec2.Vec2;
-  center: vec2.Vec2;
-  color: CardColor;
-  w: number;
-  h: number;
-  scale: number;
-  dscale: number;
-  alpha: number;
-  dalpha: number;
-}
+export class Card {
+    static WIDTH = 3 * Canvas.TILE;
+    static HEIGHT = 4 * Canvas.TILE;
 
-export function create(x: number, y: number, frontColor: color.Color): Card {
-  const pos = vec2.create(x, y);
-  const w = 3 * TILE;
-  const h = 5 * TILE;
-  const center = vec2.create(x + w / 2, y + h / 2);
+    pos: Vec2;
+    center: Vec2;
+    color: CardColor;
 
-  return {
-    pos,
-    center,
-    w, h,
-    color: { back: color.create(0, 0, 0), front: frontColor },
-    scale: 1,
-    dscale: 0,
-    alpha: 1,
-    dalpha: 0
-  };
-}
+    w: number = Card.WIDTH;
+    h: number = Card.HEIGHT;
+    scale: number = 1;
+    dscale: number = 0;
+    alpha: number = 1;
+    dalpha: number = 0;
 
-export function draw(c: Card, ctx: CanvasRenderingContext2D) {
-  ctx.translate(c.center.x, c.center.y);
-  ctx.scale(c.scale, 1);
-  ctx.translate(-c.center.x, -c.center.y);
+    constructor(x: number, y: number, frontColor: Color) {
+        this.pos = new Vec2(x, y);
+        this.center = new Vec2(x + this.w / 2, y + this.h / 2);
+        this.color = { back: new Color(0, 0, 0), front: frontColor };
+    }
 
-  if (window.showCardFront) {
-    ctx.fillStyle = color.toString(c.color.front);
-  } else {
-    ctx.fillStyle = c.scale > 0
-      ? color.toString(c.color.back)
-      : color.toString(c.color.front);
-  }
+    draw(ctx: CanvasRenderingContext2D) {
+        ctx.translate(this.center.x, this.center.y);
+        ctx.scale(this.scale, 1);
+        ctx.translate(-this.center.x, -this.center.y);
 
-  ctx.fillRect(c.pos.x, c.pos.y, c.w, c.h);
+        if (window.showCardFront) {
+            ctx.fillStyle = this.color.front.toString();
+        } else {
+            ctx.fillStyle = this.scale > 0
+                ? this.color.back.toString()
+                : this.color.front.toString();
+        }
 
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = color.toString(c.color.back);
-  ctx.strokeRect(c.pos.x, c.pos.y, c.w, c.h);
+        ctx.fillRect(this.pos.x, this.pos.y, this.w, this.h);
 
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-}
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = this.color.back.toString();
+        ctx.strokeRect(this.pos.x, this.pos.y, this.w, this.h);
 
-export function update(c: Card, dt: number) {
-  if (c.dscale === 0 && c.dalpha === 0) return;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
 
-  c.scale = toFixed(c.scale + c.dscale * dt, 1);
-  if (c.scale <= -1 || c.scale >= 1) {
-    c.dscale = 0;
-  }
+    update(dt: number) {
+        if (this.dscale === 0 && this.dalpha === 0) return;
 
-  c.alpha += c.dalpha * dt;
-  if (c.alpha >= 1 || c.alpha <= 0) {
-    c.dalpha = 0;
-  }
+        this.scale = toFixed(this.scale + this.dscale * dt, 1);
+        if (this.scale <= -1 || this.scale >= 1) {
+            this.dscale = 0;
+        }
 
-  c.color.front.a = c.alpha;
-  c.color.back.a = c.alpha;
+        this.alpha += this.dalpha * dt;
+        if (this.alpha >= 1 || this.alpha <= 0) {
+            this.dalpha = 0;
+        }
+
+        this.color.front.a = this.alpha;
+        this.color.back.a = this.alpha;
+    }
 }
