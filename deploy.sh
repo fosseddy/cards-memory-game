@@ -5,8 +5,8 @@ set -e
 tsc
 
 src=$(cat index.html)
-src=${src/build\//}
-echo $src >> ./build/index.html
+src=${src/build/cards-memory-game}
+echo $src > ./build/index.html
 
 cd build
 
