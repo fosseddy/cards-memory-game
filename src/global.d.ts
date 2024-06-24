@@ -1,11 +1,11 @@
-export {};
-
 declare global {
     interface Window {
-        showGrid: boolean;
-        showCardFront: boolean;
+        isDrawGrid: boolean;
+        isDrawFront: boolean;
         flipSpeed: number;
-        unflipDelay: number;
-        fadeOutSpeed: number;
+        fadeoutSpeed: number;
+        delayTime: number;
     }
 }
+
+export {};
