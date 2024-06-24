@@ -3,6 +3,11 @@
 set -e
 
 tsc
+
+src=$(cat index.html)
+src=${src/build\//}
+echo $src >> ./build/index.html
+
 cd build
 
 git init
