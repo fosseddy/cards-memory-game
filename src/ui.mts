@@ -1,12 +1,7 @@
 import {ctx, TILE, mouse, canvas} from "./game.mjs";
 import {Vec2} from "./math.mjs";
 
-function drawText(text: string,
-                  x: number, y: number,
-                  size: number,
-                  color: string,
-                  align: CanvasTextAlign,
-                  baseline: CanvasTextBaseline = "alphabetic"): void {
+function drawText(text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign, baseline: CanvasTextBaseline = "alphabetic"): void {
     ctx.save();
     ctx.font = `${size}px arial`;
     ctx.textAlign = align;
@@ -16,9 +11,7 @@ function drawText(text: string,
     ctx.restore();
 }
 
-function drawButton(text: string,
-                           x: number, y: number,
-                           w: number, h: number): boolean {
+function drawButton(text: string, x: number, y: number, w: number, h: number): boolean {
     const isHovered = mouse.isInsideRect({
         pos: new Vec2(x, y),
         size: new Vec2(w, h)
